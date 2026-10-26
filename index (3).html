@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teste de Saúde Financeira</title>
+<meta name="description" content="Avalie sua saúde financeira em 17 afirmações e baixe o resultado em PDF.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --fg:#1d2a24; --muted:#5e6e66; --line:#d9e0db;
+  --accent:#1f6b52; --ok:#2f7d4f; --warn:#b07a12; --bad:#b0412e;
+  --display:"Fraunces",Georgia,serif; --body:"Figtree",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#121815; --surface:#19211d; --fg:#e4ece7; --muted:#9aaba2; --line:#2c3832;
+  --accent:#5fbf98; --ok:#6cc58f; --warn:#e0b04d; --bad:#e57b67; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding:32px max(16px,env(safe-area-inset-right)) 48px max(16px,env(safe-area-inset-left))}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:24px}
+h1{font-family:var(--display);font-weight:650;font-size:clamp(1.7rem,4vw,2.3rem);line-height:1.15;margin:0}
+.lede{color:var(--muted);margin:6px 0 0;max-width:62ch}
+.scale{font-size:.85rem;color:var(--muted);margin:4px 0 0}
+.scale b{color:var(--fg)}
+.who{display:grid;grid-template-columns:1fr 180px;gap:12px}
+@media (max-width:560px){.who{grid-template-columns:1fr}}
+label{display:grid;gap:4px;font-size:.85rem;font-weight:500;color:var(--muted)}
+input{font:inherit;font-size:1rem;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.result{position:sticky;top:0;z-index:5;background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
+.score{font-family:var(--mono);font-size:2rem;font-variant-numeric:tabular-nums;line-height:1}
+.score small{font-size:.9rem;color:var(--muted)}
+.band{font-weight:600;padding:4px 12px;border-radius:999px;font-size:.9rem}
+.meter{flex:1 1 200px;min-width:0;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;width:0;transition:width .25s}
+.small{font-size:.82rem;color:var(--muted)}
+ol{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+li{display:grid;grid-template-columns:2rem 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+.n{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.opts{display:flex;gap:4px}
+.opts button{width:36px;height:36px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--fg);font-family:var(--mono);font-size:.9rem;cursor:pointer}
+.opts button:hover{border-color:var(--accent)}
+.opts button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+@media (max-width:560px){li{grid-template-columns:1.6rem 1fr}.opts{grid-column:2}}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.btn{font:inherit;font-weight:500;padding:10px 18px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+#msg{color:var(--bad)}
+.bands{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;overflow-x:auto}
+.bands h2{font-family:var(--body);font-size:1rem;margin:0 0 6px}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+td{padding:8px 6px;border-top:1px solid var(--line)}
+td:first-child{font-family:var(--mono);white-space:nowrap;color:var(--muted)}
+td:nth-child(2){font-weight:600;white-space:nowrap}
+footer{font-size:.82rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Teste de Saúde Financeira</h1>
+    <p class="lede">Classifique cada afirmação conforme a sua realidade hoje. Quanto menor a pontuação, mais saudáveis estão as suas finanças.</p>
+    <p class="scale"><b>0</b> = Não / Nunca &nbsp;·&nbsp; <b>4</b> = Sim / Frequentemente</p>
+  </header>
+
+  <div class="who">
+    <label for="name">Seu nome<input id="name" type="text" autocomplete="name" placeholder="Nome completo"></label>
+    <label for="date">Data<input id="date" type="date"></label>
+  </div>
+
+  <section class="result" aria-live="polite">
+    <div class="score"><span id="total">0</span> <small>/ 68</small></div>
+    <span class="band" id="band">—</span>
+    <div class="meter" aria-hidden="true"><i id="bar"></i></div>
+    <span class="small" id="progress">0 de 17 respondidas</span>
+  </section>
+
+  <ol id="list"></ol>
+
+  <div class="actions">
+    <button class="btn primary" id="pdf" type="button">Baixar resultado (PDF)</button>
+    <button class="btn" id="reset" type="button">Limpar respostas</button>
+    <span class="small" id="msg"></span>
+  </div>
+
+  <section class="bands">
+    <h2>Como ler a pontuação</h2>
+    <table><tbody id="bands"></tbody></table>
+  </section>
+
+  <footer>Baseado no teste de finanças do curso “Preparatório para o Bootcamp” (Via Portuguese). Nenhuma resposta é enviada: tudo fica no seu navegador.</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const ITEMS=[
+"Mente preocupada com finanças: de onde virá o dinheiro?",
+"Parar de fazer compromissos de oferta ou ofertar menos do que prometeu",
+"Receber avisos de contas atrasadas várias vezes ao ano",
+"Abrir mão de economizar na maioria dos meses",
+"Colocar no cartão de crédito porque “estou sem dinheiro” no bolso ou na conta bancária",
+"Patrimônio líquido diminuindo anualmente",
+"Pagamento da casa excede 35% da renda bruta mensal",
+"Usar as economias para pagar as despesas correntes",
+"Sentir ressentimento em relação aos credores, governo e o escritório central da organização",
+"Comparar-se materialmente a outros missionários, mantenedores e irmãos",
+"Gastar dinheiro como terapia emocional (autoestima)",
+"Ignorar ou exceder os limites do orçamento com roupas",
+"Preocupar-se com quando começará a economizar para a faculdade dos filhos ou aposentadoria",
+"Economias para “Apenas Emergência” menor do que o equivalente a dois meses de despesas correntes",
+"Menos do que 200 pessoas na lista de e-mails",
+"Fatura de cartão de crédito é maior do que $500",
+"Economias insuficientes para consertos ou troca de automóvel"
+];
+const BANDS=[
+ {min:0, max:17,label:"Excelente",  tone:"ok",  rgb:[47,125,79], desc:"Finanças sob controle. Mantenha os hábitos."},
+ {min:18,max:30,label:"Bom",        tone:"ok",  rgb:[47,125,79], desc:"Base sólida, com poucos pontos a ajustar."},
+ {min:31,max:34,label:"Atenção",    tone:"warn",rgb:[176,122,18],desc:"Alguns hábitos já pesam. Escolha 2 ou 3 itens para atacar primeiro."},
+ {min:35,max:51,label:"Preocupante",tone:"bad", rgb:[176,65,46], desc:"Estresse financeiro significativo. Vale montar um plano com alguém de confiança."},
+ {min:52,max:68,label:"Crítico",    tone:"bad", rgb:[176,65,46], desc:"Situação de alerta. Busque aconselhamento financeiro logo."}
+];
+const LABELS=["Não / Nunca","Raramente","Às vezes","Com frequência","Sim / Frequentemente"];
+
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+             set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let answers=store.get("tsf-answers",Array(ITEMS.length).fill(null));
+const $=id=>document.getElementById(id);
+$("name").value=store.get("tsf-name","");
+$("date").value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+$("name").addEventListener("input",e=>store.set("tsf-name",e.target.value));
+
+ITEMS.forEach((t,i)=>{
+  const li=document.createElement("li");
+  li.innerHTML=`<span class="n">${String(i+1).padStart(2,"0")}</span><span id="q${i}">${t}</span>
+  <div class="opts" role="group" aria-labelledby="q${i}">${[0,1,2,3,4].map(v=>`<button type="button" id="b${i}-${v}" data-i="${i}" data-v="${v}" aria-pressed="false">${v}</button>`).join("")}</div>`;
+  $("list").appendChild(li);
+});
+$("list").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-v]"); if(!b)return;
+  const i=+b.dataset.i,v=+b.dataset.v;
+  answers[i]=answers[i]===v?null:v; store.set("tsf-answers",answers); render();
+});
+
+const tone=t=>t==="ok"?"var(--ok)":t==="warn"?"var(--warn)":"var(--bad)";
+const bandFor=s=>BANDS.find(b=>s<=b.max)||BANDS[BANDS.length-1];
+const totalOf=()=>answers.reduce((s,a)=>s+(a??0),0);
+
+$("bands").innerHTML=BANDS.map(b=>`<tr><td>${b.min}–${b.max}</td><td style="color:${tone(b.tone)}">${b.label}</td><td>${b.desc}</td></tr>`).join("");
+
+function render(){
+  answers.forEach((a,i)=>{for(let v=0;v<=4;v++)$(`b${i}-${v}`).setAttribute("aria-pressed",a===v)});
+  const total=totalOf(), done=answers.filter(a=>a!==null).length, b=bandFor(total);
+  $("total").textContent=total;
+  $("progress").textContent=`${done} de ${ITEMS.length} respondidas`;
+  $("bar").style.width=(total/68*100)+"%";
+  $("bar").style.background=tone(b.tone);
+  $("band").textContent=b.label; $("band").style.color=tone(b.tone);
+  $("band").style.background=`color-mix(in srgb, ${tone(b.tone)} 14%, transparent)`;
+}
+
+$("reset").addEventListener("click",()=>{answers=Array(ITEMS.length).fill(null);store.set("tsf-answers",answers);$("msg").textContent="";render()});
+
+$("pdf").addEventListener("click",()=>{
+  const name=$("name").value.trim(), done=answers.filter(a=>a!==null).length;
+  if(!name){$("msg").textContent="Preencha seu nome para baixar o resultado.";$("name").focus();return}
+  if(done<ITEMS.length){$("msg").textContent=`Responda todas as afirmações (faltam ${ITEMS.length-done}).`;return}
+  $("msg").textContent="";
+  const [y,m,d]=($("date").value||"").split("-"); const dateBR=d?`${d}/${m}/${y}`:"";
+  const total=totalOf(), b=bandFor(total);
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:"mm",format:"a4"});
+  const L=18, W=174; let Y=22;
+  doc.setFont("helvetica","bold").setFontSize(18).setTextColor(29,42,36).text("Teste de Saúde Financeira",L,Y);
+  Y+=10; doc.setFont("helvetica","normal").setFontSize(11).setTextColor(70);
+  doc.text(`Nome: ${name}`,L,Y); doc.text(`Data: ${dateBR}`,L+W,Y,{align:"right"});
+  Y+=12; doc.setDrawColor(217,224,219).setFillColor(243,245,242).roundedRect(L,Y-7,W,20,2,2,"FD");
+  doc.setFont("helvetica","bold").setFontSize(20).setTextColor(29,42,36).text(`${total} / 68`,L+6,Y+5);
+  doc.setFontSize(13).setTextColor(...b.rgb).text(b.label,L+46,Y+1);
+  doc.setFont("helvetica","normal").setFontSize(9.5).setTextColor(80).text(doc.splitTextToSize(b.desc,W-52),L+46,Y+7);
+  Y+=24; doc.setFontSize(9).setTextColor(110).text("Escala: 0 = Não / Nunca  ·  4 = Sim / Frequentemente",L,Y);
+  Y+=6; doc.setFont("helvetica","bold").text("Afirmação",L,Y); doc.text("Nota",L+W,Y,{align:"right"});
+  Y+=2; doc.setDrawColor(200).line(L,Y,L+W,Y); Y+=5;
+  doc.setFont("helvetica","normal").setFontSize(10).setTextColor(29,42,36);
+  ITEMS.forEach((t,i)=>{
+    const lines=doc.splitTextToSize(`${i+1}. ${t}`,W-14);
+    doc.text(lines,L,Y); doc.setFont("helvetica","bold").text(String(answers[i]),L+W,Y,{align:"right"}).setFont("helvetica","normal");
+    Y+=lines.length*4.6+2.4; doc.setDrawColor(230).line(L,Y-3.2,L+W,Y-3.2);
+  });
+  Y+=4; doc.setFontSize(8.5).setTextColor(120);
+  doc.text("Faixas: "+BANDS.map(x=>`${x.min}–${x.max} ${x.label}`).join("  ·  "),L,Y);
+  Y+=5; doc.text("Baseado no teste de finanças do curso “Preparatório para o Bootcamp” (Via Portuguese).",L,Y);
+  const slug=name.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w]+/g,"-").replace(/^-|-$/g,"").toLowerCase();
+  doc.save(`saude-financeira-${slug}-${$("date").value||"sem-data"}.pdf`);
+});
+render();
+</script>
+</body>
+</html>
